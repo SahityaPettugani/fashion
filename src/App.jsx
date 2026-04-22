@@ -67,8 +67,32 @@ function App() {
     );
   };
 
-  const addToCart = (id) => {
+  const addToCart = (id, bookingDetails = null) => {
     setCartItems((current) => {
+      if (bookingDetails?.selectedStartDate && bookingDetails?.selectedEndDate) {
+        const bookingKey = `${id}-${bookingDetails.selectedStartDate}-${bookingDetails.selectedEndDate}`;
+        const existingBookedItem = current.find((item) => item.bookingKey === bookingKey);
+
+        if (existingBookedItem) {
+          return current.map((item) =>
+            item.bookingKey === bookingKey ? { ...item, quantity: item.quantity + 1 } : item
+          );
+        }
+
+        return [
+          ...current,
+          {
+            id,
+            quantity: 1,
+            bookingKey,
+            selectedStartDate: bookingDetails.selectedStartDate,
+            selectedEndDate: bookingDetails.selectedEndDate,
+            rentalDays: bookingDetails.rentalDays,
+            totalPrice: bookingDetails.totalPrice,
+          },
+        ];
+      }
+
       const existing = current.find((item) => item.id === id);
       if (existing) {
         return current.map((item) =>
@@ -79,11 +103,13 @@ function App() {
     });
   };
 
-  const updateCartQuantity = (id, delta) => {
+  const updateCartQuantity = (id, delta, bookingKey = "") => {
     setCartItems((current) =>
       current
         .map((item) =>
-          item.id === id ? { ...item, quantity: Math.max(0, item.quantity + delta) } : item
+          item.id === id && (bookingKey ? item.bookingKey === bookingKey : !item.bookingKey)
+            ? { ...item, quantity: Math.max(0, item.quantity + delta) }
+            : item
         )
         .filter((item) => item.quantity > 0)
     );
@@ -1120,11 +1146,14 @@ function CartScreen({ cartItems, onUpdateCartQuantity }) {
   const items = cartItems
     .map((entry) => {
       const product = marketItems.find((item) => item.id === entry.id);
-      return product ? { ...product, quantity: entry.quantity } : null;
+      return product ? { ...product, ...entry } : null;
     })
     .filter(Boolean);
 
-  const subtotal = items.reduce((sum, item) => sum + item.dailyPrice * item.quantity, 0);
+  const subtotal = items.reduce(
+    (sum, item) => sum + (item.totalPrice ?? item.dailyPrice) * item.quantity,
+    0
+  );
 
   return (
     <Screen>
@@ -1140,17 +1169,34 @@ function CartScreen({ cartItems, onUpdateCartQuantity }) {
           <>
             <div className="cart-list">
               {items.map((item) => (
-                <article className="cart-card glass-panel" key={item.id}>
+                <article className="cart-card glass-panel" key={item.bookingKey ?? item.id}>
                   <img className="cart-thumb" src={item.image} alt={item.title} />
                   <div className="cart-content">
                     <h4>{item.title}</h4>
-                    <p>{formatPrice(item.dailyPrice)} | Owner: {item.owner}</p>
+                    <p>
+                      {item.bookingKey
+                        ? `${formatDateLabel(item.selectedStartDate)} - ${formatDateLabel(
+                            item.selectedEndDate
+                          )} | ${item.rentalDays} days`
+                        : `${formatPrice(item.dailyPrice)} | Owner: ${item.owner}`}
+                    </p>
+                    {item.bookingKey ? (
+                      <p>
+                        ${item.totalPrice} total | ${formatPrice(item.dailyPrice)} | Owner: {item.owner}
+                      </p>
+                    ) : null}
                     <div className="quantity-row">
-                      <button className="glass-chip" onClick={() => onUpdateCartQuantity(item.id, -1)}>
+                      <button
+                        className="glass-chip"
+                        onClick={() => onUpdateCartQuantity(item.id, -1, item.bookingKey)}
+                      >
                         -
                       </button>
                       <span>{item.quantity}</span>
-                      <button className="glass-chip" onClick={() => onUpdateCartQuantity(item.id, 1)}>
+                      <button
+                        className="glass-chip"
+                        onClick={() => onUpdateCartQuantity(item.id, 1, item.bookingKey)}
+                      >
                         +
                       </button>
                     </div>
@@ -1164,7 +1210,7 @@ function CartScreen({ cartItems, onUpdateCartQuantity }) {
                 <h2>Order summary</h2>
                 <span className="price-tag">${subtotal.toFixed(2)}</span>
               </div>
-              <p>Includes your selected rentals. Booking dates are completed on each item detail screen.</p>
+              <p>Includes your selected rentals, with booked date ranges priced directly in the cart.</p>
               <button className="glass-button primary">Continue to booking</button>
             </article>
           </>
@@ -1315,7 +1361,12 @@ function DetailScreen({
       return;
     }
 
-    onAddToCart(item.id);
+    onAddToCart(item.id, {
+      selectedStartDate,
+      selectedEndDate,
+      rentalDays,
+      totalPrice: finalPrice,
+    });
     onBookingMessageChange(
       `${item.title} added to cart for ${selectedRangeLabel}. Total: $${finalPrice}.`
     );
