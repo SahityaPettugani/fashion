@@ -1088,11 +1088,13 @@ h4 {
   left: 14px;
   right: 14px;
   top: 106px;
+  bottom: 92px;
   z-index: 21;
   display: grid;
   gap: 12px;
   padding: 16px;
   border-radius: 28px;
+  overflow-y: auto;
 }
 
 .booking-calendar-toolbar {
