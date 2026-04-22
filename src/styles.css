@@ -1087,14 +1087,14 @@ h4 {
   position: absolute;
   left: 14px;
   right: 14px;
-  top: 106px;
-  bottom: 92px;
+  top: 112px;
+  bottom: 96px;
   z-index: 21;
   display: grid;
-  gap: 12px;
-  padding: 16px;
+  gap: 8px;
+  padding: 12px;
   border-radius: 28px;
-  overflow-y: auto;
+  overflow: hidden;
   scrollbar-width: none;
 }
 
@@ -1106,19 +1106,19 @@ h4 {
   display: grid;
   grid-template-columns: 40px 1fr 40px;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
 }
 
 .booking-calendar-selects {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 92px;
-  gap: 8px;
+  gap: 6px;
 }
 
 .booking-calendar-selects select {
   width: 100%;
-  padding: 10px 12px;
-  border-radius: 14px;
+  padding: 8px 10px;
+  border-radius: 12px;
   border: 1px solid rgba(255, 255, 255, 0.42);
   background: rgba(255, 255, 255, 0.22);
   color: var(--text);
@@ -1126,33 +1126,33 @@ h4 {
 
 .booking-calendar-legend {
   display: flex;
-  gap: 12px;
+  gap: 10px;
   flex-wrap: wrap;
 }
 
 .booking-weekdays {
   display: grid;
   grid-template-columns: repeat(7, minmax(0, 1fr));
-  gap: 6px;
+  gap: 4px;
 }
 
 .booking-weekdays span {
   text-align: center;
-  font-size: 0.7rem;
+  font-size: 0.62rem;
   color: var(--muted);
 }
 
 .legend-item {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  font-size: 0.82rem;
+  gap: 6px;
+  font-size: 0.76rem;
   color: var(--muted);
 }
 
 .legend-swatch {
-  width: 14px;
-  height: 14px;
+  width: 12px;
+  height: 12px;
   border-radius: 50%;
 }
 
@@ -1167,33 +1167,33 @@ h4 {
 .booking-calendar-grid {
   display: grid;
   grid-template-columns: repeat(7, minmax(0, 1fr));
-  gap: 6px;
+  gap: 4px;
 }
 
 .booking-day {
   display: grid;
-  gap: 2px;
+  gap: 1px;
   justify-items: center;
-  min-height: 52px;
-  padding: 8px 4px;
-  border-radius: 14px;
+  min-height: 40px;
+  padding: 5px 2px;
+  border-radius: 12px;
   background: rgba(255, 255, 255, 0.18);
   border: 1px solid rgba(255, 255, 255, 0.3);
   color: var(--text);
 }
 
 .booking-day span {
-  font-size: 0.88rem;
+  font-size: 0.76rem;
   font-weight: 600;
 }
 
 .booking-day small {
-  font-size: 0.58rem;
+  font-size: 0.5rem;
   color: var(--muted);
 }
 
 .booking-day-empty {
-  min-height: 52px;
+  min-height: 40px;
   background: transparent;
   border-color: transparent;
   pointer-events: none;
