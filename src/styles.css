@@ -1095,6 +1095,11 @@ h4 {
   padding: 16px;
   border-radius: 28px;
   overflow-y: auto;
+  scrollbar-width: none;
+}
+
+.booking-calendar-modal::-webkit-scrollbar {
+  display: none;
 }
 
 .booking-calendar-toolbar {
