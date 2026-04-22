@@ -1085,12 +1085,13 @@ h4 {
 
 .booking-calendar-modal {
   position: absolute;
-  left: 14px;
-  right: 14px;
-  top: 112px;
-  bottom: 96px;
+  left: 10px;
+  right: 10px;
+  top: 72px;
+  bottom: 82px;
   z-index: 21;
   display: grid;
+  grid-template-rows: auto auto auto auto 1fr auto;
   gap: 8px;
   padding: 12px;
   border-radius: 28px;
@@ -1168,6 +1169,7 @@ h4 {
   display: grid;
   grid-template-columns: repeat(7, minmax(0, 1fr));
   gap: 4px;
+  align-content: stretch;
 }
 
 .booking-day {
