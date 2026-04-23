@@ -10,6 +10,7 @@ import {
   useSearchParams,
 } from "react-router-dom";
 import mainPersonImage from "../imgs/main person.png";
+import sutdSquashFront from "../imgs/sutd_Squash_front.jpg";
 import { eventData, homeOutfits, marketItems, sharedLooks } from "./data";
 import { requestTryOnPreview } from "./lib/tryOnApi";
 
@@ -18,7 +19,7 @@ const bottomNav = [
   { to: "/favorites", label: "Favourites", icon: HeartIcon },
   { to: "/browse", label: "Browse", icon: BrowseIcon, featured: true },
   { to: "/try-on", label: "Try-On", icon: SparklesIcon },
-  { to: "/settings", label: "Settings", icon: SettingsIcon },
+  { to: "/profile", label: "Profile", icon: ProfileIcon },
 ];
 
 function paletteStyle(colors) {
@@ -56,6 +57,61 @@ function App() {
     height: 165,
     sizeCategory: "S",
   });
+  const [profilePhoto, setProfilePhoto] = useState(sutdSquashFront);
+  const userListings = useMemo(
+    () => [
+      {
+        ...marketItems.find((item) => item.id === "sutd-campus-shirt"),
+        listingStatus: "available",
+        renterName: "",
+        statusNote: "Available now",
+        nextPickupDate: "",
+      },
+      {
+        ...marketItems.find((item) => item.id === "powder-drape-set"),
+        listingStatus: "on-rent",
+        renterName: "Maya",
+        statusNote: "Out until Apr 27",
+        nextPickupDate: "2026-04-27",
+      },
+      {
+        ...marketItems.find((item) => item.id === "linen-day-set"),
+        listingStatus: "upcoming",
+        renterName: "Jo",
+        statusNote: "Booked for Apr 29",
+        nextPickupDate: "2026-04-29",
+      },
+      {
+        ...marketItems.find((item) => item.id === "cocoa-evening-slip"),
+        listingStatus: "on-rent",
+        renterName: "Nia",
+        statusNote: "Out until Apr 25",
+        nextPickupDate: "2026-04-25",
+      },
+      {
+        ...marketItems.find((item) => item.id === "blush-wrap-dress"),
+        listingStatus: "upcoming",
+        renterName: "Adele",
+        statusNote: "Booked for May 2",
+        nextPickupDate: "2026-05-02",
+      },
+      {
+        ...marketItems.find((item) => item.id === "ivory-eyelet-peplum"),
+        listingStatus: "available",
+        renterName: "",
+        statusNote: "Available now",
+        nextPickupDate: "",
+      },
+      {
+        ...marketItems.find((item) => item.id === "ivory-column-gown"),
+        listingStatus: "available",
+        renterName: "",
+        statusNote: "Available now",
+        nextPickupDate: "",
+      },
+    ].filter(Boolean),
+    []
+  );
   const showBottomNav = location.pathname !== "/";
 
   useEffect(() => {
@@ -193,14 +249,18 @@ function App() {
               }
             />
             <Route
-              path="/settings"
+              path="/profile"
               element={
-                <SettingsScreen
+                <ProfileScreen
                   userMeasurements={userMeasurements}
                   onMeasurementsChange={setUserMeasurements}
+                  userListings={userListings}
+                  profilePhoto={profilePhoto}
+                  onProfilePhotoChange={setProfilePhoto}
                 />
               }
             />
+            <Route path="/settings" element={<Navigate to="/profile" replace />} />
             <Route
               path="/upload"
               element={<UploadScreen savedGarment={savedGarment} onSaveGarment={setSavedGarment} />}
@@ -236,7 +296,8 @@ function PhoneHeader() {
     "/events": "Event Styling",
     "/favorites": "Saved Looks",
     "/cart": "Rental Cart",
-    "/settings": "Settings",
+    "/profile": "Profile",
+    "/settings": "Profile",
   };
   const activeLabel = location.pathname.startsWith("/detail/")
     ? "Rental Detail"
@@ -341,7 +402,7 @@ function HomeScreen({ savedLooks, onToggleFavorite, onAddToCart }) {
   return (
     <Screen>
       <div className="screen-scroll">
-        <div className="top-row">
+        <div className="top-row browse-top-row">
           <div>
             <p className="eyebrow">Thursday edit</p>
             <h2 className="screen-title">Good morning, Sia</h2>
@@ -1566,13 +1627,49 @@ function DetailScreen({
   );
 }
 
-function SettingsScreen({ userMeasurements, onMeasurementsChange }) {
+function ProfileScreen({
+  userMeasurements,
+  onMeasurementsChange,
+  userListings,
+  profilePhoto,
+  onProfilePhotoChange,
+}) {
   const [notifications, setNotifications] = useState(true);
   const [motionPreview, setMotionPreview] = useState(true);
   const [skinSafeFirst, setSkinSafeFirst] = useState(false);
+  const [listingFilter, setListingFilter] = useState("all");
+  const [showSettingsPanel, setShowSettingsPanel] = useState(false);
+
+  const filteredListings = useMemo(() => {
+    const visibleListings =
+      listingFilter === "all"
+        ? userListings
+        : userListings.filter((item) => item.listingStatus === listingFilter);
+
+    return [...visibleListings].sort((a, b) => {
+      const aDate = a.nextPickupDate
+        ? parseDateValue(a.nextPickupDate).getTime()
+        : Number.MAX_SAFE_INTEGER;
+      const bDate = b.nextPickupDate
+        ? parseDateValue(b.nextPickupDate).getTime()
+        : Number.MAX_SAFE_INTEGER;
+      return aDate - bDate;
+    });
+  }, [listingFilter, userListings]);
+
+  const onRentCount = userListings.filter((item) => item.listingStatus === "on-rent").length;
+  const upcomingCount = userListings.filter((item) => item.listingStatus === "upcoming").length;
 
   const updateMeasurements = (key, value) => {
     onMeasurementsChange((current) => ({ ...current, [key]: value }));
+  };
+
+  const handleProfilePhoto = (event) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => onProfilePhotoChange(String(reader.result));
+    reader.readAsDataURL(file);
   };
 
   return (
@@ -1580,91 +1677,225 @@ function SettingsScreen({ userMeasurements, onMeasurementsChange }) {
       <div className="screen-scroll">
         <div className="top-row">
           <div>
-            <p className="eyebrow">Preferences</p>
-            <h2 className="screen-title">Settings</h2>
+            <p className="eyebrow">Your wardrobe</p>
+            <h2 className="screen-title">Profile</h2>
           </div>
+          <button
+            className="icon-button"
+            onClick={() => setShowSettingsPanel(true)}
+            aria-label="Open profile settings"
+          >
+            <SettingsIcon />
+          </button>
         </div>
 
-        <article className="content-card glass-panel">
-          <h3>Profile preferences</h3>
-          <SettingRow
-            label="Notifications"
-            description="Receive reminders for bookings and saved looks."
-            value={notifications}
-            onToggle={() => setNotifications((current) => !current)}
-          />
-          <SettingRow
-            label="Motion previews"
-            description="Enable flow simulation on compatible rentals."
-            value={motionPreview}
-            onToggle={() => setMotionPreview((current) => !current)}
-          />
-          <SettingRow
-            label="Skin-safe first"
-            description="Prioritize soft fabrics and lined looks in Browse."
-            value={skinSafeFirst}
-            onToggle={() => setSkinSafeFirst((current) => !current)}
-          />
-        </article>
-
-        <article className="content-card glass-panel">
-          <p className="eyebrow">Measurements</p>
-          <h3>Fit profile</h3>
-          <div className="measurement-grid">
-            <label className="field">
-              <span>Bust (cm)</span>
-              <input
-                type="number"
-                value={userMeasurements.bust}
-                onChange={(event) => updateMeasurements("bust", Number(event.target.value))}
-              />
-            </label>
-            <label className="field">
-              <span>Waist (cm)</span>
-              <input
-                type="number"
-                value={userMeasurements.waist}
-                onChange={(event) => updateMeasurements("waist", Number(event.target.value))}
-              />
-            </label>
-            <label className="field">
-              <span>Hips (cm)</span>
-              <input
-                type="number"
-                value={userMeasurements.hips}
-                onChange={(event) => updateMeasurements("hips", Number(event.target.value))}
-              />
-            </label>
-            <label className="field">
-              <span>Height (cm)</span>
-              <input
-                type="number"
-                value={userMeasurements.height}
-                onChange={(event) => updateMeasurements("height", Number(event.target.value))}
-              />
-            </label>
-            <label className="field">
-              <span>Preferred size</span>
-              <select
-                value={userMeasurements.sizeCategory}
-                onChange={(event) => updateMeasurements("sizeCategory", event.target.value)}
+        <article className="content-card glass-panel profile-hero-card">
+          <div className="profile-identity-row">
+            <label className="profile-photo-upload">
+              <input type="file" accept="image/*" onChange={handleProfilePhoto} />
+              <div
+                className={`profile-photo-frame ${profilePhoto ? "has-photo" : ""}`}
+                style={profilePhoto ? { backgroundImage: `url(${profilePhoto})` } : undefined}
               >
-                {["XS", "S", "M", "L"].map((size) => (
-                  <option key={size} value={size}>
-                    {size}
-                  </option>
-                ))}
-              </select>
+                {!profilePhoto ? <span>Add main photo</span> : null}
+              </div>
             </label>
+            <div className="profile-identity-copy">
+              <p className="eyebrow">Owner profile</p>
+              <h3>Sia's rental closet</h3>
+              <p>
+                Manage your main profile photo, keep your listings organised, and open settings
+                for measurements, preferences, and account details.
+              </p>
+            </div>
           </div>
         </article>
 
         <article className="content-card glass-panel">
-          <p className="eyebrow">Account</p>
-          <h3>Aura member</h3>
-          <p>Community wardrobe access, AI styling, and rental reminders are active for this profile.</p>
+          <div className="section-head">
+            <div>
+              <p className="eyebrow">Listings</p>
+              <h3>Your closet for rent</h3>
+            </div>
+            <span className="price-tag">{userListings.length} live pieces</span>
+          </div>
+          <div className="profile-stats-grid">
+            <article className="profile-stat-card">
+              <span>{userListings.length}</span>
+              <p>Total listings</p>
+            </article>
+            <article className="profile-stat-card">
+              <span>{onRentCount}</span>
+              <p>On rent now</p>
+            </article>
+            <article className="profile-stat-card">
+              <span>{upcomingCount}</span>
+              <p>Upcoming bookings</p>
+            </article>
+          </div>
+          <div className="profile-toggle-row">
+            <div
+              className="media-toggle-overlay glass-panel profile-segmented-toggle"
+              role="tablist"
+              aria-label="Filter profile listings"
+            >
+              {[
+                ["all", "All"],
+                ["on-rent", "On Rent"],
+                ["upcoming", "Upcoming"],
+              ].map(([value, label]) => (
+                <button
+                  key={value}
+                  className={`media-toggle-button ${listingFilter === value ? "active" : ""}`}
+                  onClick={() => setListingFilter(value)}
+                  role="tab"
+                  aria-selected={listingFilter === value}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+            <p className="profile-toggle-copy">
+              Sort your own clothing listings by current rental status.
+            </p>
+          </div>
+          <div className="market-grid profile-listings-grid">
+            {filteredListings.map((item) => (
+              <article className="market-card profile-listing-card" key={item.id}>
+                <div className="market-image-wrap">
+                  <img className="market-thumb real-image" src={item.image} alt={item.title} />
+                  <span
+                    className={`profile-status-badge profile-status-${item.listingStatus}`}
+                  >
+                    {getProfileListingLabel(item.listingStatus)}
+                  </span>
+                </div>
+                <h4>{item.title}</h4>
+                <p className="profile-listing-meta">
+                  {item.category} | {formatPrice(item.dailyPrice)}
+                </p>
+                <p className="profile-listing-note">{item.statusNote}</p>
+                <div className="meta-row card-meta">
+                  <span>
+                    {item.renterName ? `Renter: ${item.renterName}` : "Ready for the next booking"}
+                  </span>
+                  <span>
+                    {item.nextPickupDate ? formatDateLabel(item.nextPickupDate) : "Open calendar"}
+                  </span>
+                </div>
+              </article>
+            ))}
+          </div>
         </article>
       </div>
+      {showSettingsPanel ? (
+        <>
+          <button
+            className="drawer-backdrop"
+            onClick={() => setShowSettingsPanel(false)}
+            aria-label="Close profile settings"
+          />
+          <aside className="filters-drawer glass-panel profile-settings-drawer">
+            <div className="section-head">
+              <div>
+                <p className="eyebrow">Profile controls</p>
+                <h3>Settings</h3>
+              </div>
+              <button className="text-button" onClick={() => setShowSettingsPanel(false)}>
+                Close
+              </button>
+            </div>
+
+            <article className="content-card glass-panel drawer-profile-card">
+              <h3>Profile preferences</h3>
+              <SettingRow
+                label="Notifications"
+                description="Receive reminders for bookings and saved looks."
+                value={notifications}
+                onToggle={() => setNotifications((current) => !current)}
+              />
+              <SettingRow
+                label="Motion previews"
+                description="Enable flow simulation on compatible rentals."
+                value={motionPreview}
+                onToggle={() => setMotionPreview((current) => !current)}
+              />
+              <SettingRow
+                label="Skin-safe first"
+                description="Prioritize soft fabrics and lined looks in Browse."
+                value={skinSafeFirst}
+                onToggle={() => setSkinSafeFirst((current) => !current)}
+              />
+            </article>
+
+            <article className="content-card glass-panel drawer-profile-card">
+              <p className="eyebrow">Measurements</p>
+              <h3>Fit profile</h3>
+              <div className="measurement-grid">
+                <label className="field">
+                  <span>Bust (cm)</span>
+                  <input
+                    type="number"
+                    value={userMeasurements.bust}
+                    onChange={(event) => updateMeasurements("bust", Number(event.target.value))}
+                  />
+                </label>
+                <label className="field">
+                  <span>Waist (cm)</span>
+                  <input
+                    type="number"
+                    value={userMeasurements.waist}
+                    onChange={(event) => updateMeasurements("waist", Number(event.target.value))}
+                  />
+                </label>
+                <label className="field">
+                  <span>Hips (cm)</span>
+                  <input
+                    type="number"
+                    value={userMeasurements.hips}
+                    onChange={(event) => updateMeasurements("hips", Number(event.target.value))}
+                  />
+                </label>
+                <label className="field">
+                  <span>Height (cm)</span>
+                  <input
+                    type="number"
+                    value={userMeasurements.height}
+                    onChange={(event) => updateMeasurements("height", Number(event.target.value))}
+                  />
+                </label>
+                <label className="field">
+                  <span>Preferred size</span>
+                  <select
+                    value={userMeasurements.sizeCategory}
+                    onChange={(event) => updateMeasurements("sizeCategory", event.target.value)}
+                  >
+                    {["XS", "S", "M", "L"].map((size) => (
+                      <option key={size} value={size}>
+                        {size}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              </div>
+            </article>
+
+            <article className="content-card glass-panel drawer-profile-card">
+              <p className="eyebrow">Account</p>
+              <h3>Aura member</h3>
+              <p>
+                Community wardrobe access, AI styling, and rental reminders are active for this
+                profile.
+              </p>
+              <div className="profile-account-list">
+                <span>Sia Tan</span>
+                <span>sia@aura.club</span>
+                <span>Host status: verified</span>
+              </div>
+            </article>
+          </aside>
+        </>
+      ) : null}
     </Screen>
   );
 }
@@ -1923,6 +2154,17 @@ function capitalize(value) {
     .join(" ");
 }
 
+function getProfileListingLabel(status) {
+  const labels = {
+    all: "All",
+    available: "Available",
+    "on-rent": "On rent",
+    upcoming: "Upcoming",
+  };
+
+  return labels[status] ?? status;
+}
+
 function CartIcon() {
   return (
     <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -2010,6 +2252,15 @@ function SettingsIcon() {
     <svg viewBox="0 0 24 24" aria-hidden="true">
       <path d="M12 8.5A3.5 3.5 0 1 0 12 15.5 3.5 3.5 0 0 0 12 8.5Z" />
       <path d="M19 12a7.7 7.7 0 0 0-.1-1.2l2-1.5-2-3.4-2.4 1a7 7 0 0 0-2-.9L14 3h-4l-.5 2.9a7 7 0 0 0-2 .9l-2.4-1-2 3.4 2 1.5A7.7 7.7 0 0 0 5 12c0 .4 0 .8.1 1.2l-2 1.5 2 3.4 2.4-1a7 7 0 0 0 2 .9L10 21h4l.5-2.9a7 7 0 0 0 2-.9l2.4 1 2-3.4-2-1.5c.1-.4.1-.8.1-1.2Z" />
+    </svg>
+  );
+}
+
+function ProfileIcon() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <circle cx="12" cy="8" r="3.5" />
+      <path d="M5 19c1.8-3.4 4.2-5 7-5s5.2 1.6 7 5" />
     </svg>
   );
 }

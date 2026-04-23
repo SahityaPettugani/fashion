@@ -15,6 +15,7 @@ import mainInCnyTwo from "../imgs/main in cny2.jpg";
 import mainInIndianSaree from "../imgs/main in indian saree.jpg";
 import mainInCnyTwoVideo from "../imgs/vids/main in cny2.mp4";
 import mainInIndianSareeVideo from "../imgs/vids/Realistic_Dress_Walking_Video_Generated.mp4";
+import sutdShirt from "../imgs/sutd shirt.jfif";
 
 export const homeOutfits = [
   {
@@ -75,6 +76,29 @@ export const sharedLooks = [
 ];
 
 export const marketItems = [
+  {
+    id: "sutd-campus-shirt",
+    title: "SUTD campus shirt",
+    dailyPrice: 14,
+    fabric: "cotton",
+    sensitive: true,
+    occasion: false,
+    occasionType: "university",
+    ethnicStyle: "",
+    condition: "worn-few",
+    fit: "Campus casual",
+    description: "Relaxed SUTD shirt styled as an easy campus layer for day-to-day wear.",
+    palette: ["#f1ece6", "#d9ccc0", "#8f8278"],
+    image: sutdShirt,
+    category: "Tops",
+    size: "M",
+    sizeCategory: "M",
+    sleeveLength: "short",
+    dressLength: "mini",
+    material: "cotton",
+    garmentMeasurements: { bust: 96, waist: 90, hips: 100, length: 72 },
+    owner: "Sia",
+  },
   {
     id: "ivory-eyelet-peplum",
     title: "Ivory eyelet peplum",

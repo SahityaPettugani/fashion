@@ -394,6 +394,17 @@ h4 {
   gap: 12px;
 }
 
+.browse-top-row {
+  position: sticky;
+  top: 0;
+  z-index: 6;
+  padding: 10px 0 12px;
+  background:
+    linear-gradient(180deg, rgba(244, 236, 229, 0.96), rgba(244, 236, 229, 0.78) 78%, rgba(244, 236, 229, 0));
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
 .screen-title {
   font-size: 1.8rem;
   line-height: 1;
@@ -869,6 +880,146 @@ h4 {
   background: rgba(255, 255, 255, 0.78);
   color: var(--text);
   box-shadow: 0 6px 14px rgba(95, 73, 60, 0.1);
+}
+
+.profile-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.profile-hero-card {
+  overflow: hidden;
+}
+
+.profile-identity-row {
+  display: grid;
+  grid-template-columns: 112px 1fr;
+  gap: 16px;
+  align-items: center;
+}
+
+.profile-photo-upload {
+  display: block;
+  cursor: pointer;
+}
+
+.profile-photo-upload input {
+  display: none;
+}
+
+.profile-photo-frame {
+  width: 112px;
+  aspect-ratio: 1;
+  border-radius: 28px;
+  display: grid;
+  place-items: center;
+  padding: 14px;
+  text-align: center;
+  font-size: 0.8rem;
+  color: var(--muted);
+  border: 1px dashed rgba(154, 130, 121, 0.48);
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.22), rgba(223, 201, 191, 0.3));
+  background-size: cover;
+  background-position: center;
+  overflow: hidden;
+}
+
+.profile-photo-frame.has-photo {
+  border-style: solid;
+  color: transparent;
+}
+
+.profile-identity-copy p {
+  margin: 0;
+}
+
+.profile-stat-card {
+  padding: 12px;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.24);
+  border: 1px solid rgba(255, 255, 255, 0.34);
+}
+
+.profile-stat-card span {
+  display: block;
+  font-size: 1.4rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.profile-stat-card p,
+.profile-listing-meta,
+.profile-listing-note,
+.profile-toggle-copy {
+  margin: 0;
+  color: var(--muted);
+}
+
+.profile-toggle-row {
+  margin-top: 16px;
+  display: grid;
+  gap: 10px;
+}
+
+.profile-settings-drawer {
+  display: grid;
+  gap: 16px;
+}
+
+.profile-segmented-toggle {
+  position: static;
+  width: fit-content;
+}
+
+.profile-listings-grid {
+  margin-top: 16px;
+}
+
+.profile-listing-card {
+  position: relative;
+}
+
+.profile-status-badge {
+  position: absolute;
+  left: 10px;
+  bottom: 10px;
+  padding: 7px 10px;
+  border-radius: 999px;
+  background: rgba(255, 250, 247, 0.9);
+  font-size: 0.76rem;
+  font-weight: 600;
+  box-shadow: 0 10px 18px rgba(89, 66, 54, 0.12);
+}
+
+.profile-status-on-rent {
+  color: #8e5b49;
+}
+
+.profile-status-upcoming {
+  color: #8b6a2b;
+}
+
+.profile-status-available {
+  color: #55755c;
+}
+
+.profile-listing-meta {
+  margin-top: 2px;
+}
+
+.profile-listing-note {
+  margin-top: 8px;
+  font-size: 0.92rem;
+}
+
+.profile-account-list {
+  display: grid;
+  gap: 8px;
+  margin-top: 12px;
+  color: var(--muted);
 }
 
 .avatar-halo {
@@ -1458,5 +1609,15 @@ h4 {
   .media-toggle-button {
     padding: 6px 10px;
     font-size: 0.72rem;
+  }
+
+  .profile-identity-row,
+  .profile-stats-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .profile-photo-frame {
+    width: 100%;
+    max-width: 112px;
   }
 }
