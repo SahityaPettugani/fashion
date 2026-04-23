@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import {
   Link,
+  Navigate,
   Route,
   Routes,
   useLocation,
@@ -131,15 +132,7 @@ function App() {
           <PhoneHeader />
 
           <Routes>
-            <Route
-              path="/"
-              element={
-                <WelcomeScreen
-                  userMeasurements={userMeasurements}
-                  onMeasurementsChange={setUserMeasurements}
-                />
-              }
-            />
+            <Route path="/" element={<Navigate to="/browse" replace />} />
             <Route
               path="/home"
               element={
