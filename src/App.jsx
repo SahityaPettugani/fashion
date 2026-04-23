@@ -37,9 +37,10 @@ function App() {
   const [marketFilters, setMarketFilters] = useState({
     occasion: "all",
     ethnicStyle: "all",
+    gender: "all",
     condition: "all",
     sensitiveOnly: false,
-    maxPrice: 40,
+    maxPrice: 15,
     sizeMatchOnly: false,
     sizeCategory: "all",
     material: "all",
@@ -60,6 +61,13 @@ function App() {
   const [profilePhoto, setProfilePhoto] = useState(sutdSquashFront);
   const userListings = useMemo(
     () => [
+      {
+        ...marketItems.find((item) => item.id === "sutd-squash-front"),
+        listingStatus: "available",
+        renterName: "",
+        statusNote: "Available now",
+        nextPickupDate: "",
+      },
       {
         ...marketItems.find((item) => item.id === "sutd-campus-shirt"),
         listingStatus: "available",
@@ -110,6 +118,71 @@ function App() {
         nextPickupDate: "",
       },
     ].filter(Boolean),
+    []
+  );
+  const lendingHistory = useMemo(
+    () =>
+      [
+        {
+          ...marketItems.find((item) => item.id === "sutd-squash-front"),
+          renterName: "Kai",
+          lentDate: "2026-04-22",
+          returnedDate: "2026-04-23",
+          totalEarned: 12,
+        },
+        {
+          ...marketItems.find((item) => item.id === "sutd-campus-shirt"),
+          renterName: "Darren",
+          lentDate: "2026-04-20",
+          returnedDate: "2026-04-21",
+          totalEarned: 14,
+        },
+        {
+          ...marketItems.find((item) => item.id === "blush-wrap-dress"),
+          renterName: "Mia",
+          lentDate: "2026-04-18",
+          returnedDate: "2026-04-19",
+          totalEarned: 9,
+        },
+        {
+          ...marketItems.find((item) => item.id === "linen-day-set"),
+          renterName: "Evan",
+          lentDate: "2026-04-16",
+          returnedDate: "2026-04-17",
+          totalEarned: 7,
+        },
+        {
+          ...marketItems.find((item) => item.id === "cocoa-evening-slip"),
+          renterName: "Jules",
+          lentDate: "2026-04-13",
+          returnedDate: "2026-04-15",
+          totalEarned: 11,
+        },
+        {
+          ...marketItems.find((item) => item.id === "powder-drape-set"),
+          renterName: "Amara",
+          lentDate: "2026-04-10",
+          returnedDate: "2026-04-12",
+          totalEarned: 15,
+        },
+        {
+          ...marketItems.find((item) => item.id === "ivory-eyelet-peplum"),
+          renterName: "Tess",
+          lentDate: "2026-04-07",
+          returnedDate: "2026-04-08",
+          totalEarned: 8,
+        },
+        {
+          ...marketItems.find((item) => item.id === "ivory-column-gown"),
+          renterName: "Nora",
+          lentDate: "2026-04-03",
+          returnedDate: "2026-04-05",
+          totalEarned: 15,
+        },
+      ]
+        .filter(Boolean)
+        .sort((a, b) => parseDateValue(b.returnedDate).getTime() - parseDateValue(a.returnedDate).getTime())
+        .slice(0, 7),
     []
   );
   const showBottomNav = location.pathname !== "/";
@@ -255,6 +328,7 @@ function App() {
                   userMeasurements={userMeasurements}
                   onMeasurementsChange={setUserMeasurements}
                   userListings={userListings}
+                  lendingHistory={lendingHistory}
                   profilePhoto={profilePhoto}
                   onProfilePhotoChange={setProfilePhoto}
                 />
@@ -611,6 +685,10 @@ function MarketplaceScreen({
         return false;
       }
 
+      if (filters.gender !== "all" && item.gender !== filters.gender) {
+        return false;
+      }
+
       if (filters.condition !== "all" && item.condition !== filters.condition) {
         return false;
       }
@@ -782,6 +860,18 @@ function MarketplaceScreen({
                 onChange={(value) => updateFilter("ethnicStyle", value)}
               />
             ) : null}
+
+            <FilterGroup
+              title="Gender"
+              options={[
+                ["all", "All"],
+                ["male", "Male"],
+                ["female", "Female"],
+                ["unisex", "Unisex"],
+              ]}
+              value={filters.gender}
+              onChange={(value) => updateFilter("gender", value)}
+            />
 
             <FilterGroup
               title="Size"
@@ -1631,34 +1721,34 @@ function ProfileScreen({
   userMeasurements,
   onMeasurementsChange,
   userListings,
+  lendingHistory,
   profilePhoto,
   onProfilePhotoChange,
 }) {
   const [notifications, setNotifications] = useState(true);
   const [motionPreview, setMotionPreview] = useState(true);
   const [skinSafeFirst, setSkinSafeFirst] = useState(false);
+  const [profileView, setProfileView] = useState("listings");
   const [listingFilter, setListingFilter] = useState("all");
   const [showSettingsPanel, setShowSettingsPanel] = useState(false);
 
   const filteredListings = useMemo(() => {
-    const visibleListings =
-      listingFilter === "all"
-        ? userListings
-        : userListings.filter((item) => item.listingStatus === listingFilter);
-
-    return [...visibleListings].sort((a, b) => {
-      const aDate = a.nextPickupDate
-        ? parseDateValue(a.nextPickupDate).getTime()
-        : Number.MAX_SAFE_INTEGER;
-      const bDate = b.nextPickupDate
-        ? parseDateValue(b.nextPickupDate).getTime()
-        : Number.MAX_SAFE_INTEGER;
-      return aDate - bDate;
-    });
+    return userListings
+      .filter((item) => (listingFilter === "all" ? true : item.listingStatus === listingFilter))
+      .sort((a, b) => {
+        const aDate = a.nextPickupDate
+          ? parseDateValue(a.nextPickupDate).getTime()
+          : Number.MAX_SAFE_INTEGER;
+        const bDate = b.nextPickupDate
+          ? parseDateValue(b.nextPickupDate).getTime()
+          : Number.MAX_SAFE_INTEGER;
+        return aDate - bDate;
+      });
   }, [listingFilter, userListings]);
 
   const onRentCount = userListings.filter((item) => item.listingStatus === "on-rent").length;
   const upcomingCount = userListings.filter((item) => item.listingStatus === "upcoming").length;
+  const totalRevenue = lendingHistory.reduce((sum, item) => sum + item.totalEarned, 0);
 
   const updateMeasurements = (key, value) => {
     onMeasurementsChange((current) => ({ ...current, [key]: value }));
@@ -1714,11 +1804,35 @@ function ProfileScreen({
         <article className="content-card glass-panel">
           <div className="section-head">
             <div>
-              <p className="eyebrow">Listings</p>
-              <h3>Your closet for rent</h3>
+              <p className="eyebrow">Closet activity</p>
+              <h3>Your owner dashboard</h3>
             </div>
-            <span className="price-tag">{userListings.length} live pieces</span>
+            <span className="price-tag">
+              {profileView === "listings" ? `${userListings.length} live pieces` : `${lendingHistory.length} recent loans`}
+            </span>
           </div>
+          <div
+            className="media-toggle-overlay glass-panel profile-segmented-toggle profile-view-toggle"
+            role="tablist"
+            aria-label="Switch profile section"
+          >
+            {[
+              ["listings", "Listings"],
+              ["history", "History"],
+            ].map(([value, label]) => (
+              <button
+                key={value}
+                className={`media-toggle-button ${profileView === value ? "active" : ""}`}
+                onClick={() => setProfileView(value)}
+                role="tab"
+                aria-selected={profileView === value}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+          {profileView === "listings" ? (
+            <>
           <div className="profile-stats-grid">
             <article className="profile-stat-card">
               <span>{userListings.length}</span>
@@ -1737,7 +1851,7 @@ function ProfileScreen({
             <div
               className="media-toggle-overlay glass-panel profile-segmented-toggle"
               role="tablist"
-              aria-label="Filter profile listings"
+              aria-label="Filter profile listings by status"
             >
               {[
                 ["all", "All"],
@@ -1756,7 +1870,7 @@ function ProfileScreen({
               ))}
             </div>
             <p className="profile-toggle-copy">
-              Sort your own clothing listings by current rental status.
+              Sort your own clothing listings by rental status.
             </p>
           </div>
           <div className="market-grid profile-listings-grid">
@@ -1772,7 +1886,7 @@ function ProfileScreen({
                 </div>
                 <h4>{item.title}</h4>
                 <p className="profile-listing-meta">
-                  {item.category} | {formatPrice(item.dailyPrice)}
+                  {item.category} | {capitalize(item.gender)} | {formatPrice(item.dailyPrice)}
                 </p>
                 <p className="profile-listing-note">{item.statusNote}</p>
                 <div className="meta-row card-meta">
@@ -1786,6 +1900,45 @@ function ProfileScreen({
               </article>
             ))}
           </div>
+            </>
+          ) : (
+            <div className="profile-history-stack">
+              <div className="profile-stats-grid">
+                <article className="profile-stat-card">
+                  <span>${totalRevenue}</span>
+                  <p>Total revenue</p>
+                </article>
+                <article className="profile-stat-card">
+                  <span>{lendingHistory.length}</span>
+                  <p>Past items lent</p>
+                </article>
+                <article className="profile-stat-card">
+                  <span>{lendingHistory[0] ? formatDateLabel(lendingHistory[0].returnedDate) : "-"}</span>
+                  <p>Latest return</p>
+                </article>
+              </div>
+              <p className="profile-toggle-copy">
+                Shows up to your 7 most recent completed lends and the revenue earned from them.
+              </p>
+              <div className="profile-history-list">
+                {lendingHistory.map((item) => (
+                  <article className="profile-history-card" key={`${item.id}-${item.returnedDate}`}>
+                    <img className="profile-history-thumb real-image" src={item.image} alt={item.title} />
+                    <div>
+                      <h4>{item.title}</h4>
+                      <p className="profile-listing-meta">
+                        Lent to {item.renterName} | Returned {formatDateLabel(item.returnedDate)}
+                      </p>
+                      <p className="profile-listing-note">
+                        {formatDateLabel(item.lentDate)} - {formatDateLabel(item.returnedDate)}
+                      </p>
+                    </div>
+                    <span className="price-tag">${item.totalEarned}</span>
+                  </article>
+                ))}
+              </div>
+            </div>
+          )}
         </article>
       </div>
       {showSettingsPanel ? (
@@ -2148,6 +2301,7 @@ function formatMonthLabel(value) {
 }
 
 function capitalize(value) {
+  if (!value) return "";
   return value
     .split(" ")
     .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
