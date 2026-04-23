@@ -434,6 +434,85 @@ h4 {
   border-radius: 24px;
 }
 
+.event-alert-shell {
+  overflow: hidden;
+  padding: 0;
+}
+
+.event-swipe-frame {
+  position: relative;
+  overflow: hidden;
+  border-radius: 22px;
+  min-height: 172px;
+  background: #efe7df;
+}
+
+.event-swipe-action {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 92px;
+  display: grid;
+  place-items: center;
+  color: #fffaf7;
+}
+
+.event-swipe-action svg {
+  width: 22px;
+  height: 22px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.event-swipe-action-search {
+  left: 0;
+  background: #9d7b55;
+}
+
+.event-swipe-action-delete {
+  right: 0;
+  background: #b56a58;
+}
+
+.event-alert-card,
+.event-alert-empty {
+  display: grid;
+  gap: 14px;
+}
+
+.event-alert-card {
+  position: relative;
+  z-index: 1;
+  min-height: 172px;
+  padding: 16px;
+  border-radius: 22px;
+  transition:
+    transform 180ms ease,
+    box-shadow 180ms ease,
+    background 180ms ease;
+  touch-action: pan-y;
+  background: #f5efe8;
+}
+
+.event-alert-card.swipe-right {
+  box-shadow: -12px 16px 28px rgba(145, 119, 87, 0.22);
+}
+
+.event-alert-card.swipe-left {
+  box-shadow: 12px 16px 28px rgba(171, 102, 84, 0.22);
+}
+
+.event-alert-copy small {
+  display: block;
+  margin-top: 8px;
+  color: var(--muted);
+  font-size: 0.82rem;
+  line-height: 1.4;
+}
+
 .glass-chip,
 .filter-chip,
 .toggle-button {

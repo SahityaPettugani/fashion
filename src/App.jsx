@@ -671,6 +671,17 @@ function MarketplaceScreen({
   userMeasurements,
 }) {
   const [showFilters, setShowFilters] = useState(false);
+  const [eventAlertDismissed, setEventAlertDismissed] = useState(false);
+  const [eventCardOffset, setEventCardOffset] = useState(0);
+  const [dragStartX, setDragStartX] = useState(null);
+  const [eventSwipeLocked, setEventSwipeLocked] = useState(false);
+  const swipeActionThreshold = 36;
+  const upcomingEvent = {
+    title: "Capstone showcase",
+    hint: "Looking for formals?",
+    detail: "Calendar sync spotted this event coming up soon and matched it with your browse alerts.",
+  };
+
   const filtered = useMemo(() => {
     return marketItems.filter((item) => {
       if (filters.occasion !== "all") {
@@ -729,6 +740,52 @@ function MarketplaceScreen({
     onFiltersChange((current) => ({ ...current, [key]: value }));
   };
 
+  const applyEventSuggestion = () => {
+    updateFilter("occasion", "formal");
+    setEventCardOffset(0);
+    setEventAlertDismissed(false);
+    setEventSwipeLocked(false);
+  };
+
+  const dismissEventSuggestion = () => {
+    setEventAlertDismissed(true);
+    setEventCardOffset(0);
+    setEventSwipeLocked(false);
+  };
+
+  const handleEventPointerDown = (event) => {
+    if (eventSwipeLocked) return;
+    setDragStartX(event.clientX);
+  };
+
+  const handleEventPointerMove = (event) => {
+    if (dragStartX === null || eventSwipeLocked) return;
+    const nextOffset = event.clientX - dragStartX;
+    setEventCardOffset(nextOffset);
+
+    if (nextOffset >= swipeActionThreshold) {
+      setEventSwipeLocked(true);
+      setEventCardOffset(92);
+      setDragStartX(null);
+      setTimeout(() => applyEventSuggestion(), 280);
+      return;
+    }
+
+    if (nextOffset <= -swipeActionThreshold) {
+      setEventSwipeLocked(true);
+      setEventCardOffset(-92);
+      setTimeout(() => dismissEventSuggestion(), 280);
+      setDragStartX(null);
+    }
+  };
+
+  const handleEventPointerEnd = () => {
+    if (dragStartX !== null && !eventSwipeLocked) {
+      setEventCardOffset(0);
+    }
+    setDragStartX(null);
+  };
+
   return (
     <Screen>
       <div className="screen-scroll">
@@ -763,16 +820,57 @@ function MarketplaceScreen({
           </button>
         </div>
 
-        <article className="feature-card glass-panel">
-          <div>
-            <p className="eyebrow">Browse all</p>
-            <h3>Real dresses from your shared wardrobe</h3>
-            <p>Explore rentable dresses, occasion edits, and soft-fabric picks from the community.</p>
+        <section className="stack-section">
+          <div className="section-head">
+            <div>
+              <p className="eyebrow">Calendar linked</p>
+              <h3>Upcoming events</h3>
+            </div>
           </div>
-          <Link className="glass-chip align-center" to="/favorites">
-            View saved
-          </Link>
-        </article>
+          <article className="feature-card glass-panel event-alert-shell">
+            {!eventAlertDismissed ? (
+              <div className="event-swipe-frame">
+                <div className="event-swipe-action event-swipe-action-search" aria-hidden="true">
+                  <SearchIcon />
+                </div>
+                <div className="event-swipe-action event-swipe-action-delete" aria-hidden="true">
+                  <TrashIcon />
+                </div>
+                <div
+                  className={`event-alert-card ${eventCardOffset > 24 ? "swipe-right" : ""} ${
+                    eventCardOffset < -24 ? "swipe-left" : ""
+                  }`}
+                  style={{ transform: `translateX(${eventCardOffset}px)` }}
+                  onPointerDown={handleEventPointerDown}
+                  onPointerMove={handleEventPointerMove}
+                  onPointerUp={handleEventPointerEnd}
+                  onPointerCancel={handleEventPointerEnd}
+                >
+                  <div className="event-alert-copy">
+                    <p className="eyebrow">Upcoming event</p>
+                    <h3>{upcomingEvent.title}</h3>
+                    <p>{upcomingEvent.hint}</p>
+                    <small>{upcomingEvent.detail}</small>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="event-alert-empty">
+                <div>
+                  <p className="eyebrow">Upcoming event</p>
+                  <h3>No event alert showing</h3>
+                  <p>The capstone reminder was dismissed. Reopen it below for the calendar POC.</p>
+                </div>
+                <button
+                  className="glass-chip align-center"
+                  onClick={() => setEventAlertDismissed(false)}
+                >
+                  Show event again
+                </button>
+              </div>
+            )}
+          </article>
+        </section>
 
         <div className="market-grid">
           {filtered.map((item) => (
@@ -2358,6 +2456,15 @@ function FilterIcon() {
   );
 }
 
+function SearchIcon() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <circle cx="11" cy="11" r="5.5" />
+      <path d="m15.2 15.2 4.3 4.3" />
+    </svg>
+  );
+}
+
 function HeartToggleIcon({ filled }) {
   return filled ? (
     <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -2388,6 +2495,19 @@ function CloseIcon() {
     <svg viewBox="0 0 24 24" aria-hidden="true">
       <path d="M7 7l10 10" />
       <path d="M17 7 7 17" />
+    </svg>
+  );
+}
+
+function TrashIcon() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M5 7h14" />
+      <path d="M9 7V5h6v2" />
+      <path d="M8 10v7" />
+      <path d="M12 10v7" />
+      <path d="M16 10v7" />
+      <path d="M7 7l1 12h8l1-12" />
     </svg>
   );
 }
